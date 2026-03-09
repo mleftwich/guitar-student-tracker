@@ -136,6 +136,16 @@ const Pill = ({label,color})=>(
     fontSize:10,fontWeight:400,background:color,color:"#fff",
     letterSpacing:"0.06em",textTransform:"uppercase",fontFamily:FF}}>{label}</span>
 );
+const useIsMobile = () => {
+  const [mobile,setMobile] = useState(()=>window.innerWidth<640);
+  useEffect(()=>{
+    const h=()=>setMobile(window.innerWidth<640);
+    window.addEventListener("resize",h);
+    return ()=>window.removeEventListener("resize",h);
+  },[]);
+  return mobile;
+};
+
 const StatCard = ({label,value,accent,sub,valueStyle})=>(
   <div style={{background:C.card,borderRadius:12,padding:"20px 22px",
     flex:"1 1 130px",fontFamily:FF,
@@ -300,6 +310,7 @@ function getNextUp(students) {
 
 // ── Dashboard ─────────────────────────────────────────────────────
 const Dashboard = ({students,onGoto})=>{
+  const mobile=useIsMobile();
   const all=students.flatMap(s=>s.lessons.map(l=>({...l,studentName:s.name,studentId:s.id})));
   const newStu=students.filter(s=>s.isNew);
   const recent=all.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
@@ -315,7 +326,7 @@ const Dashboard = ({students,onGoto})=>{
           sub={nextUp ? `${nextUp.student.instrument} · ${nextUp.student.level}` : "No weekly students set up yet"}
           valueStyle={{fontSize:22,fontWeight:400}}/>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18}}>
+      <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"1fr 1fr",gap:18}}>
         <DashSection title="Recent Lessons" accent={C.bermuda}>
           {recent.length===0?<DE>No lessons logged yet.</DE>:recent.map(l=>(
             <div key={l.id} onClick={()=>onGoto(l.studentId)}
@@ -453,6 +464,7 @@ const StudentGrid = ({students,onSelect,onAdd})=>{
 
 // ── Student Detail ────────────────────────────────────────────────
 const StudentDetail = ({student,onBack,onEdit,onDelete,onAddLesson,onEditLesson,onDeleteLesson,onUpdateSkills,onAddSong,onToggleSong,onDeleteSong})=>{
+  const mobile=useIsMobile();
   const [confirm,setConfirm]=useState(null);
   const [modal,setModal]=useState(null);
   const [promptModal,setPromptModal]=useState(false);
@@ -497,10 +509,10 @@ const StudentDetail = ({student,onBack,onEdit,onDelete,onAddLesson,onEditLesson,
       </div>
 
       {/* Main two-column layout */}
-      <div style={{display:"grid",gridTemplateColumns:"minmax(0,1fr) 340px",gap:18,alignItems:"start"}}>
+      <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"minmax(0,1fr) 340px",gap:18,alignItems:"start"}}>
         {/* Left column: focus/homework + notes + lesson history */}
         <div>
-          {latest&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:16}}>
+          {latest&&<div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"1fr 1fr",gap:14,marginBottom:16}}>
             <InfoPanel label="Next Lesson Focus" value={latest.nextFocus} accent={C.manhattan} icon="🎯"/>
             <InfoPanel label="Current Homework"  value={latest.homework}  accent={C.jupiter}   icon="📝"/>
           </div>}
@@ -542,7 +554,7 @@ const StudentDetail = ({student,onBack,onEdit,onDelete,onAddLesson,onEditLesson,
         </div>
 
         {/* Right column: skill tags + song list */}
-        <div style={{position:"sticky",top:116}}>
+        <div style={mobile?{}:{position:"sticky",top:116}}>
           <SkillTags
             skills={student.skills||{achieved:[],desired:[]}}
             onUpdate={onUpdateSkills}/>
