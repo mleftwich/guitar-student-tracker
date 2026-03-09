@@ -128,21 +128,21 @@ const inp = {
 
 const Badge = ({label,color,small})=>(
   <span style={{display:"inline-block",padding:small?"1px 7px":"2px 10px",borderRadius:20,
-    fontSize:small?10:11,fontWeight:700,background:color+"22",color,
+    fontSize:small?10:11,fontWeight:400,background:color+"22",color,
     border:`1px solid ${color}44`,whiteSpace:"nowrap",fontFamily:FF}}>{label}</span>
 );
 const Pill = ({label,color})=>(
   <span style={{display:"inline-block",padding:"2px 10px",borderRadius:20,
-    fontSize:10,fontWeight:800,background:color,color:"#fff",
+    fontSize:10,fontWeight:400,background:color,color:"#fff",
     letterSpacing:"0.06em",textTransform:"uppercase",fontFamily:FF}}>{label}</span>
 );
 const StatCard = ({label,value,accent,sub,valueStyle})=>(
   <div style={{background:C.card,borderRadius:12,padding:"20px 22px",
     flex:"1 1 130px",fontFamily:FF,
     border:`1px solid ${C.border}`,borderTop:`3px solid ${accent}`}}>
-    <div style={{fontSize:30,fontWeight:900,color:accent,lineHeight:1,...valueStyle}}>{value}</div>
-    <div style={{fontSize:11,fontWeight:700,color:C.textSub,marginTop:5,textTransform:"uppercase",letterSpacing:"0.04em"}}>{label}</div>
-    {sub&&<div style={{fontSize:10,color:C.frolly,marginTop:3,fontWeight:600}}>{sub}</div>}
+    <div style={{fontSize:30,fontWeight:400,color:accent,lineHeight:1,...valueStyle}}>{value}</div>
+    <div style={{fontSize:12,fontWeight:400,color:C.textSub,marginTop:5,textTransform:"uppercase",letterSpacing:"0.04em"}}>{label}</div>
+    {sub&&<div style={{fontSize:10,color:C.frolly,marginTop:3,fontWeight:400}}>{sub}</div>}
   </div>
 );
 
@@ -157,7 +157,7 @@ const Btn = ({children,onClick,variant="primary",small,disabled,full})=>(
   <button onClick={onClick} disabled={disabled} style={{
     ...BtnStyles[variant], borderRadius:8,
     padding:small?"5px 12px":"8px 18px",
-    fontSize:small?11:13, fontWeight:700,
+    fontSize:small?11:13, fontWeight:400,
     cursor:disabled?"not-allowed":"pointer",
     opacity:disabled?0.5:1,
     display:"inline-flex", alignItems:"center", gap:6,
@@ -183,7 +183,7 @@ const Modal = ({title,onClose,children,wide})=>(
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",
         padding:"16px 22px",borderBottom:`1px solid ${C.border}`,
         position:"sticky",top:0,background:C.card,zIndex:2}}>
-        <div style={{fontWeight:800,fontSize:15,color:C.text,fontFamily:FF}}>{title}</div>
+        <div style={{fontWeight:400,fontSize:17,color:C.text,fontFamily:FF}}>{title}</div>
         <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,
           cursor:"pointer",color:C.textSub}}>✕</button>
       </div>
@@ -202,7 +202,7 @@ const Confirm = ({message,onConfirm,onCancel})=>(
 );
 const Field = ({label,children})=>(
   <div style={{marginBottom:15}}>
-    <label style={{display:"block",fontSize:11,fontWeight:700,color:C.textSub,
+    <label style={{display:"block",fontSize:11,fontWeight:400,color:C.textSub,
       marginBottom:5,textTransform:"uppercase",letterSpacing:"0.04em",fontFamily:FF}}>{label}</label>
     {children}
   </div>
@@ -239,13 +239,13 @@ const StudentForm = ({initial,onSave,onClose})=>{
           <input type="checkbox" checked={f.weekly}
             onChange={e=>setF(p=>({...p,weekly:e.target.checked}))}
             style={{accentColor:C.bermuda,width:15,height:15}}/>
-          <span style={{color:C.text,fontWeight:600}}>Weekly student</span>
+          <span style={{color:C.text,fontWeight:400}}>Weekly student</span>
         </label>
         <label style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",fontSize:13,fontFamily:FF}}>
           <input type="checkbox" checked={f.isNew}
             onChange={e=>setF(p=>({...p,isNew:e.target.checked}))}
             style={{accentColor:C.frolly,width:15,height:15}}/>
-          <span style={{color:C.text,fontWeight:600}}>Mark as New Student</span>
+          <span style={{color:C.text,fontWeight:400}}>Mark as New Student</span>
         </label>
       </div>
     </Field>
@@ -313,7 +313,7 @@ const Dashboard = ({students,onGoto})=>{
         <StatCard label="Next Up" accent={C.manhattan}
           value={nextUp ? nextUp.student.name.split(" ")[0] : "—"}
           sub={nextUp ? `${nextUp.student.instrument} · ${nextUp.student.level}` : "No weekly students set up yet"}
-          valueStyle={{fontSize:22,fontWeight:500}}/>
+          valueStyle={{fontSize:22,fontWeight:400}}/>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18}}>
         <DashSection title="Recent Lessons" accent={C.bermuda}>
@@ -323,7 +323,7 @@ const Dashboard = ({students,onGoto})=>{
               onMouseEnter={e=>e.currentTarget.style.background=C.muted}
               onMouseLeave={e=>e.currentTarget.style.background=""}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
-                <span style={{fontWeight:700,fontSize:13,color:C.text}}>{l.studentName}</span>
+                <span style={{fontWeight:400,fontSize:15,color:C.text}}>{l.studentName}</span>
                 <span style={{fontSize:10,color:C.textSub}}>{fmt(l.date)}</span>
               </div>
               <div style={{fontSize:12,color:C.textSub,marginTop:2,overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{l.covered}</div>
@@ -340,18 +340,18 @@ const Dashboard = ({students,onGoto})=>{
                     onMouseEnter={e=>e.currentTarget.style.background=C.muted}
                     onMouseLeave={e=>e.currentTarget.style.background=""}>
                     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-                      <span style={{fontWeight:800,fontSize:15,color:C.text,fontFamily:FF}}>{nextUp.student.name}</span>
+                      <span style={{fontWeight:400,fontSize:17,color:C.text,fontFamily:FF}}>{nextUp.student.name}</span>
                       <Badge label={nextUp.student.instrument} color={C.manhattan} small/>
                       <Badge label={nextUp.student.level} color={LEVEL_COLORS[nextUp.student.level]} small/>
                     </div>
                     {nextUp.ml.covered || nextUp.ml.nextFocus
                       ? <>
                           {nextUp.ml.covered && <div style={{marginBottom:6}}>
-                            <span style={{fontSize:10,fontWeight:800,color:C.textSub,textTransform:"uppercase",letterSpacing:"0.05em"}}>Last lesson </span>
+                            <span style={{fontSize:10,fontWeight:400,color:C.textSub,textTransform:"uppercase",letterSpacing:"0.05em"}}>Last lesson </span>
                             <span style={{fontSize:13,color:C.text,lineHeight:1.5}}>{nextUp.ml.covered}</span>
                           </div>}
                           {nextUp.ml.nextFocus && <div>
-                            <span style={{fontSize:10,fontWeight:800,color:C.manhattan,textTransform:"uppercase",letterSpacing:"0.05em"}}>Focus for today </span>
+                            <span style={{fontSize:10,fontWeight:400,color:C.manhattan,textTransform:"uppercase",letterSpacing:"0.05em"}}>Focus for today </span>
                             <span style={{fontSize:13,color:C.text,lineHeight:1.5}}>{nextUp.ml.nextFocus}</span>
                           </div>}
                         </>
@@ -371,7 +371,7 @@ const Dashboard = ({students,onGoto})=>{
                 style={{padding:"9px 14px",borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer"}}
                 onMouseEnter={e=>e.currentTarget.style.background=C.muted}
                 onMouseLeave={e=>e.currentTarget.style.background=""}>
-                <span style={{fontWeight:700,fontSize:13,color:C.text}}>{s.name}</span>
+                <span style={{fontWeight:400,fontSize:13,color:C.text}}>{s.name}</span>
                 <Badge label={s.instrument} color={C.bermuda} small/>
               </div>
             ))}
@@ -383,7 +383,7 @@ const Dashboard = ({students,onGoto})=>{
 };
 const DashSection = ({title,accent,children})=>(
   <div style={{background:C.card,borderRadius:12,overflow:"hidden",border:`1px solid ${C.border}`}}>
-    <div style={{padding:"10px 14px",background:C.oxford,color:C.text,fontSize:11,fontWeight:800,
+    <div style={{padding:"10px 14px",background:C.oxford,color:C.text,fontSize:13,fontWeight:400,
       letterSpacing:"0.06em",textTransform:"uppercase",borderLeft:`3px solid ${accent}`,fontFamily:FF}}>{title}</div>
     {children}
   </div>
@@ -419,7 +419,7 @@ const StudentGrid = ({students,onSelect,onAdd})=>{
             onMouseEnter={e=>{e.currentTarget.style.background=C.cardHover;e.currentTarget.style.transform="translateY(-2px)";}}
             onMouseLeave={e=>{e.currentTarget.style.background=C.card;e.currentTarget.style.transform="";}}>
               {s.isNew&&<div style={{position:"absolute",top:12,right:12}}><Pill label="NEW" color={C.frolly}/></div>}
-              <div style={{fontWeight:800,fontSize:15,color:C.text,marginBottom:8,paddingRight:s.isNew?44:0,fontFamily:FF}}>{s.name}</div>
+              <div style={{fontWeight:400,fontSize:17,color:C.text,marginBottom:8,paddingRight:s.isNew?44:0,fontFamily:FF}}>{s.name}</div>
               <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}}>
                 <Badge label={s.instrument} color={C.bermuda} small/>
                 <Badge label={s.level} color={LEVEL_COLORS[s.level]} small/>
@@ -433,14 +433,14 @@ const StudentGrid = ({students,onSelect,onAdd})=>{
               </div>
               {s.skills?.achieved?.length>0&&<div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:8}}>
                 {s.skills.achieved.slice(0,3).map(t=>(
-                  <span key={t} style={{fontSize:9,fontWeight:700,padding:"1px 7px",borderRadius:20,
+                  <span key={t} style={{fontSize:9,fontWeight:400,padding:"1px 7px",borderRadius:20,
                     background:C.jupiter+"22",color:C.jupiter,border:`1px solid ${C.jupiter}33`,fontFamily:FF}}>{t}</span>
                 ))}
                 {s.skills.achieved.length>3&&<span style={{fontSize:9,color:C.textMuted,fontFamily:FF,padding:"1px 4px"}}>+{s.skills.achieved.length-3}</span>}
               </div>}
               {ml?.nextFocus&&<div style={{fontSize:11,color:C.text,background:C.muted,borderRadius:7,
                 padding:"6px 9px",lineHeight:1.4,borderLeft:`3px solid ${C.manhattan}`}}>
-                <strong style={{color:C.manhattan}}>Next: </strong>
+                <span style={{color:C.manhattan}}>Next: </span>
                 <span style={{display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{ml.nextFocus}</span>
               </div>}
             </div>;
@@ -462,7 +462,7 @@ const StudentDetail = ({student,onBack,onEdit,onDelete,onAddLesson,onEditLesson,
   return (
     <div style={{padding:"20px",maxWidth:1140,margin:"0 auto",fontFamily:FF}}>
       <button onClick={onBack} style={{background:"none",border:"none",cursor:"pointer",
-        color:C.textSub,fontSize:13,fontWeight:600,marginBottom:16,
+        color:C.textSub,fontSize:13,fontWeight:400,marginBottom:16,
         display:"flex",alignItems:"center",gap:5,padding:0,fontFamily:FF}}>← Back to Students</button>
 
       {/* Header card */}
@@ -471,7 +471,7 @@ const StudentDetail = ({student,onBack,onEdit,onDelete,onAddLesson,onEditLesson,
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:12,marginBottom:14}}>
           <div>
             <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
-              <div style={{fontWeight:900,fontSize:22,color:C.text,fontFamily:FF}}>{student.name}</div>
+              <div style={{fontWeight:400,fontSize:26,color:C.text,fontFamily:FF}}>{student.name}</div>
               {student.isNew&&<Pill label="NEW" color={C.frolly}/>}
             </div>
             <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8}}>
@@ -512,7 +512,7 @@ const StudentDetail = ({student,onBack,onEdit,onDelete,onAddLesson,onEditLesson,
           </div>}
 
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-            <div style={{fontWeight:800,fontSize:14,color:C.text,fontFamily:FF}}>Lesson History</div>
+            <div style={{fontWeight:400,fontSize:17,color:C.text,fontFamily:FF}}>Lesson History</div>
             <Btn small onClick={()=>setModal({type:"addLesson"})}>+ Log Lesson</Btn>
           </div>
           {sorted.length===0
@@ -526,7 +526,7 @@ const StudentDetail = ({student,onBack,onEdit,onDelete,onAddLesson,onEditLesson,
               borderRadius:12,padding:"16px 18px",marginBottom:12}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
                 <div style={{display:"flex",alignItems:"center",gap:8}}>
-                  <span style={{fontWeight:700,fontSize:13,color:C.text,fontFamily:FF}}>{fmt(l.date)}</span>
+                  <span style={{fontWeight:400,fontSize:13,color:C.text,fontFamily:FF}}>{fmt(l.date)}</span>
                   {i===0&&<Pill label="Latest" color={C.bermuda}/>}
                 </div>
                 <div style={{display:"flex",gap:6}}>
@@ -591,21 +591,21 @@ const StudentDetail = ({student,onBack,onEdit,onDelete,onAddLesson,onEditLesson,
 const InfoPanel = ({label,value,accent,icon})=>(
   <div style={{background:C.card,border:`1px solid ${C.border}`,borderTop:`3px solid ${accent}`,
     borderRadius:12,padding:"13px 16px",minHeight:80}}>
-    <div style={{fontSize:10,fontWeight:800,color:accent,textTransform:"uppercase",
+    <div style={{fontSize:12,fontWeight:400,color:accent,textTransform:"uppercase",
       letterSpacing:"0.06em",marginBottom:6,fontFamily:FF}}>{icon} {label}</div>
     <div style={{fontSize:13,color:value?C.text:C.textMuted,lineHeight:1.5,
       fontStyle:value?"normal":"italic",fontFamily:FF}}>{value||"Not set"}</div>
   </div>
 );
 const SectionHead = ({label,color,icon})=>(
-  <div style={{fontSize:10,fontWeight:800,color,textTransform:"uppercase",
+  <div style={{fontSize:13,fontWeight:400,color,textTransform:"uppercase",
     letterSpacing:"0.07em",marginBottom:8,fontFamily:FF}}>{icon} {label}</div>
 );
 const LR = ({icon,label,value,accent})=>(
   <div style={{marginBottom:6,display:"flex",gap:8,alignItems:"flex-start"}}>
     <span style={{fontSize:12,minWidth:16}}>{icon}</span>
     <div style={{fontSize:13,color:C.text,lineHeight:1.5,fontFamily:FF}}>
-      <strong style={{color:accent,marginRight:4}}>{label}:</strong>{value}
+      <span style={{color:accent,marginRight:4,fontSize:14}}>{label}:</span>{value}
     </div>
   </div>
 );
@@ -613,13 +613,13 @@ const LR = ({icon,label,value,accent})=>(
 // ── Skill Tags ────────────────────────────────────────────────────
 const TagGroup = ({label,accent,tags,input,setInput,onAdd,onRemove})=>(
   <div style={{marginBottom:14}}>
-    <div style={{fontSize:10,fontWeight:700,color:accent,textTransform:"uppercase",
+    <div style={{fontSize:12,fontWeight:400,color:accent,textTransform:"uppercase",
       letterSpacing:"0.06em",marginBottom:8,fontFamily:FF}}>{label}</div>
     <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:8,minHeight:24}}>
       {tags.length===0&&<span style={{fontSize:12,color:C.textMuted,fontStyle:"italic",fontFamily:FF}}>None yet</span>}
       {tags.map(t=>(
         <span key={t} style={{display:"inline-flex",alignItems:"center",gap:3,
-          padding:"2px 6px 2px 10px",borderRadius:20,fontSize:11,fontWeight:600,
+          padding:"2px 6px 2px 10px",borderRadius:20,fontSize:11,fontWeight:400,
           background:accent+"22",color:accent,border:`1px solid ${accent}44`,fontFamily:FF}}>
           {t}
           <button onClick={()=>onRemove(t)} style={{background:"none",border:"none",cursor:"pointer",
@@ -756,7 +756,7 @@ const AppHeader = ()=>(
           letterSpacing:"0.08em",textTransform:"uppercase",lineHeight:1}}>
           Guitar Student Tracker
         </div>
-        <div style={{fontSize:9,fontWeight:600,color:C.textMuted,fontFamily:FF,
+        <div style={{fontSize:9,fontWeight:400,color:C.textMuted,fontFamily:FF,
           letterSpacing:"0.18em",textTransform:"uppercase",marginTop:4}}>
           Lesson Planner &amp; Progress Log
         </div>
@@ -788,7 +788,7 @@ const AuthGate = ({children})=>{
         width:"100%",maxWidth:360,border:`1px solid ${C.border}`,
         boxShadow:"0 16px 48px #00000044",textAlign:"center"}}>
         <div style={{fontSize:36,marginBottom:12}}>🎸</div>
-        <div style={{fontSize:18,fontWeight:900,color:C.text,letterSpacing:"0.06em",
+        <div style={{fontSize:22,fontWeight:400,color:C.text,letterSpacing:"0.06em",
           textTransform:"uppercase",marginBottom:6,fontFamily:FF}}>Guitar Student Tracker</div>
         <div style={{fontSize:12,color:C.textSub,marginBottom:28,fontFamily:FF}}>Enter your password to continue</div>
         <input
@@ -875,7 +875,7 @@ export default function App(){
             ))}
           </div>
           <div style={{padding:"0 16px",display:"flex",alignItems:"center"}}>
-            <span style={{fontSize:10,color:statusColor,fontFamily:FF,fontWeight:600,transition:"color .3s"}}>{statusLabel}</span>
+            <span style={{fontSize:10,color:statusColor,fontFamily:FF,fontWeight:400,transition:"color .3s"}}>{statusLabel}</span>
           </div>
         </div>
       </nav>
