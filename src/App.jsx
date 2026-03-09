@@ -814,13 +814,17 @@ export default function App(){
   const [selId,setSelId]=useState(null);
   const [ready,setReady]=useState(false);
   const [saveStatus,setSaveStatus]=useState("saved");
+  const skipSave=React.useRef(true);
 
   useEffect(()=>{
-    apiLoad().then(d=>{ setStudents(d && d.length ? d : SEED); setReady(true); });
+    // d===null means API failed → fall back to SEED; d===[] means no students yet
+    apiLoad().then(d=>{ setStudents(d !== null ? d : SEED); setReady(true); });
   },[]);
 
   useEffect(()=>{
     if(!ready||!students) return;
+    // skip the first fire (initial data load) so we never overwrite the blob on mount
+    if(skipSave.current){ skipSave.current=false; return; }
     setSaveStatus("saving");
     const t=setTimeout(()=>{
       apiSave(students)
@@ -867,7 +871,7 @@ export default function App(){
               <button key={t.id} onClick={()=>{setTab(t.id);if(t.id!=="students")setSelId(null);}} style={{
                 background:"none",border:"none",cursor:"pointer",fontFamily:FF,
                 color:tab===t.id?C.manhattan:C.textSub,
-                fontWeight:tab===t.id?800:500,fontSize:13,
+                fontWeight:400,fontSize:tab===t.id?14:13,
                 padding:"0 20px",
                 borderBottom:tab===t.id?`2px solid ${C.manhattan}`:"2px solid transparent",
                 transition:"color .15s",
@@ -875,7 +879,7 @@ export default function App(){
             ))}
           </div>
           <div style={{padding:"0 16px",display:"flex",alignItems:"center"}}>
-            <span style={{fontSize:10,color:statusColor,fontFamily:FF,fontWeight:400,transition:"color .3s"}}>{statusLabel}</span>
+            <span style={{fontSize:saveStatus==="error"?12:10,color:statusColor,fontFamily:FF,fontWeight:400,transition:"color .3s"}}>{statusLabel}</span>
           </div>
         </div>
       </nav>
