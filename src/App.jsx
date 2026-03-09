@@ -2,20 +2,20 @@ import { useState, useEffect, useCallback } from "react";
 import React from "react";
 
 const globalStyle = document.createElement("style");
-globalStyle.textContent = `*, *::before, *::after { box-sizing: border-box; } html, body { margin: 0; padding: 0; background: #1a2238; }`;
+globalStyle.textContent = `*, *::before, *::after { box-sizing: border-box; } html, body { margin: 0; padding: 0; background: #1b1712; }`;
 document.head.appendChild(globalStyle);
 
 const C = {
   manhattan:"#E8A98A", jupiter:"#6B8F8A",
   bermuda:"#7A9BB5",   frolly:"#E8736A",
-  bg:"#1a2238",        bgAlt:"#202840",
-  card:"#273050",      cardHover:"#2d3860",
-  muted:"#323f60",     mutedLight:"#3d4e72",
-  border:"#3a4d6e",
-  text:"#e2e8f0",      textSub:"#7a8fa8",
-  textMuted:"#5a6e8a",
-  nav:"#141a2e",
-  oxford:"#243050",
+  bg:"#1b1712",        bgAlt:"#221e18",
+  card:"#2b261f",      cardHover:"#322c24",
+  muted:"#3c3529",     mutedLight:"#4a4234",
+  border:"#4a422e",
+  text:"#e8e0d5",      textSub:"#8a7d68",
+  textMuted:"#6a5e4e",
+  nav:"#131009",
+  oxford:"#231f17",
 };
 
 const LEVEL_COLORS = { Beginner:C.bermuda, Elementary:C.jupiter, Intermediate:C.manhattan, Advanced:C.frolly };
@@ -136,11 +136,11 @@ const Pill = ({label,color})=>(
     fontSize:10,fontWeight:800,background:color,color:"#fff",
     letterSpacing:"0.06em",textTransform:"uppercase",fontFamily:FF}}>{label}</span>
 );
-const StatCard = ({label,value,accent,sub})=>(
+const StatCard = ({label,value,accent,sub,valueStyle})=>(
   <div style={{background:C.card,borderRadius:12,padding:"20px 22px",
     flex:"1 1 130px",fontFamily:FF,
     border:`1px solid ${C.border}`,borderTop:`3px solid ${accent}`}}>
-    <div style={{fontSize:30,fontWeight:900,color:accent,lineHeight:1}}>{value}</div>
+    <div style={{fontSize:30,fontWeight:900,color:accent,lineHeight:1,...valueStyle}}>{value}</div>
     <div style={{fontSize:11,fontWeight:700,color:C.textSub,marginTop:5,textTransform:"uppercase",letterSpacing:"0.04em"}}>{label}</div>
     {sub&&<div style={{fontSize:10,color:C.frolly,marginTop:3,fontWeight:600}}>{sub}</div>}
   </div>
@@ -312,7 +312,8 @@ const Dashboard = ({students,onGoto})=>{
         <StatCard label="Lessons Logged" value={all.length}      accent={C.jupiter}/>
         <StatCard label="Next Up" accent={C.manhattan}
           value={nextUp ? nextUp.student.name.split(" ")[0] : "—"}
-          sub={nextUp ? `${nextUp.student.instrument} · ${nextUp.student.level}` : "No weekly students set up yet"}/>
+          sub={nextUp ? `${nextUp.student.instrument} · ${nextUp.student.level}` : "No weekly students set up yet"}
+          valueStyle={{fontSize:22,fontWeight:500}}/>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18}}>
         <DashSection title="Recent Lessons" accent={C.bermuda}>
@@ -333,29 +334,35 @@ const Dashboard = ({students,onGoto})=>{
           <DashSection title="Next Up" accent={C.manhattan}>
             {!nextUp
               ? <DE>No weekly students set up yet.</DE>
-              : <div onClick={()=>onGoto(nextUp.student.id)}
-                  style={{padding:"14px 16px",cursor:"pointer"}}
-                  onMouseEnter={e=>e.currentTarget.style.background=C.muted}
-                  onMouseLeave={e=>e.currentTarget.style.background=""}>
-                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-                    <span style={{fontWeight:800,fontSize:15,color:C.text,fontFamily:FF}}>{nextUp.student.name}</span>
-                    <Badge label={nextUp.student.instrument} color={C.manhattan} small/>
-                    <Badge label={nextUp.student.level} color={LEVEL_COLORS[nextUp.student.level]} small/>
+              : <>
+                  <div onClick={()=>onGoto(nextUp.student.id)}
+                    style={{padding:"14px 16px",cursor:"pointer"}}
+                    onMouseEnter={e=>e.currentTarget.style.background=C.muted}
+                    onMouseLeave={e=>e.currentTarget.style.background=""}>
+                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                      <span style={{fontWeight:800,fontSize:15,color:C.text,fontFamily:FF}}>{nextUp.student.name}</span>
+                      <Badge label={nextUp.student.instrument} color={C.manhattan} small/>
+                      <Badge label={nextUp.student.level} color={LEVEL_COLORS[nextUp.student.level]} small/>
+                    </div>
+                    {nextUp.ml.covered || nextUp.ml.nextFocus
+                      ? <>
+                          {nextUp.ml.covered && <div style={{marginBottom:6}}>
+                            <span style={{fontSize:10,fontWeight:800,color:C.textSub,textTransform:"uppercase",letterSpacing:"0.05em"}}>Last lesson </span>
+                            <span style={{fontSize:13,color:C.text,lineHeight:1.5}}>{nextUp.ml.covered}</span>
+                          </div>}
+                          {nextUp.ml.nextFocus && <div>
+                            <span style={{fontSize:10,fontWeight:800,color:C.manhattan,textTransform:"uppercase",letterSpacing:"0.05em"}}>Focus for today </span>
+                            <span style={{fontSize:13,color:C.text,lineHeight:1.5}}>{nextUp.ml.nextFocus}</span>
+                          </div>}
+                        </>
+                      : <DE>No lesson logged yet — add one first.</DE>
+                    }
                   </div>
-                  {nextUp.ml.covered || nextUp.ml.nextFocus
-                    ? <>
-                        {nextUp.ml.covered && <div style={{marginBottom:6}}>
-                          <span style={{fontSize:10,fontWeight:800,color:C.textSub,textTransform:"uppercase",letterSpacing:"0.05em"}}>Last lesson </span>
-                          <span style={{fontSize:13,color:C.text,lineHeight:1.5}}>{nextUp.ml.covered}</span>
-                        </div>}
-                        {nextUp.ml.nextFocus && <div>
-                          <span style={{fontSize:10,fontWeight:800,color:C.manhattan,textTransform:"uppercase",letterSpacing:"0.05em"}}>Focus for today </span>
-                          <span style={{fontSize:13,color:C.text,lineHeight:1.5}}>{nextUp.ml.nextFocus}</span>
-                        </div>}
-                      </>
-                    : <DE>No lesson logged yet — add one first.</DE>
-                  }
-                </div>
+                  <div style={{padding:"8px 16px 12px",borderTop:`1px solid ${C.border}`}}
+                    onClick={e=>e.stopPropagation()}>
+                    <CopyBtn text={buildQuick(nextUp.student)} label="⚡ Quick Brief" variant="copy" small/>
+                  </div>
+                </>
             }
           </DashSection>
           <DashSection title="New Students" accent={C.frolly}>
@@ -453,65 +460,57 @@ const StudentDetail = ({student,onBack,onEdit,onDelete,onAddLesson,onEditLesson,
   const latest=sorted[0]; const days=latest?daysSince(latest.date):null;
 
   return (
-    <div style={{padding:"20px",maxWidth:1060,margin:"0 auto",fontFamily:FF}}>
+    <div style={{padding:"20px",maxWidth:1140,margin:"0 auto",fontFamily:FF}}>
       <button onClick={onBack} style={{background:"none",border:"none",cursor:"pointer",
         color:C.textSub,fontSize:13,fontWeight:600,marginBottom:16,
         display:"flex",alignItems:"center",gap:5,padding:0,fontFamily:FF}}>← Back to Students</button>
 
+      {/* Header card */}
       <div style={{background:C.card,border:`1px solid ${C.border}`,borderLeft:`4px solid ${C.manhattan}`,
-        borderRadius:14,padding:"22px 24px",marginBottom:18,
-        display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:12}}>
-        <div>
-          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
-            <div style={{fontWeight:900,fontSize:22,color:C.text,fontFamily:FF}}>{student.name}</div>
-            {student.isNew&&<Pill label="NEW" color={C.frolly}/>}
+        borderRadius:14,padding:"20px 24px",marginBottom:18}}>
+        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:12,marginBottom:14}}>
+          <div>
+            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+              <div style={{fontWeight:900,fontSize:22,color:C.text,fontFamily:FF}}>{student.name}</div>
+              {student.isNew&&<Pill label="NEW" color={C.frolly}/>}
+            </div>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8}}>
+              <Badge label={student.instrument} color={C.manhattan}/>
+              <Badge label={student.level} color={LEVEL_COLORS[student.level]}/>
+            </div>
+            <div style={{fontSize:12,color:C.textSub,fontFamily:FF}}>
+              Started {fmt(student.startDate)} · {student.lessons.length} lesson{student.lessons.length!==1?"s":""}
+              {days!==null&&<span style={{color:days>=14?C.frolly:C.textSub}}> · Last seen {days}d ago</span>}
+            </div>
           </div>
-          <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8}}>
-            <Badge label={student.instrument} color={C.manhattan}/>
-            <Badge label={student.level} color={LEVEL_COLORS[student.level]}/>
-          </div>
-          <div style={{fontSize:12,color:C.textSub,fontFamily:FF}}>
-            Started {fmt(student.startDate)} · {student.lessons.length} lesson{student.lessons.length!==1?"s":""}
-            {days!==null&&<span style={{color:days>=14?C.frolly:C.textSub}}> · Last seen {days}d ago</span>}
+          <div style={{display:"flex",gap:8,flexWrap:"wrap",flexShrink:0}}>
+            <Btn small variant="ghost" onClick={()=>setModal({type:"edit"})}>Edit Student</Btn>
+            <Btn small variant="danger" onClick={()=>setConfirm({type:"student"})}>Delete</Btn>
           </div>
         </div>
-        <div style={{display:"flex",gap:8,flexWrap:"wrap",flexShrink:0}}>
-          <Btn small variant="ghost" onClick={()=>setModal({type:"edit"})}>Edit Student</Btn>
-          <Btn small variant="danger" onClick={()=>setConfirm({type:"student"})}>Delete</Btn>
-        </div>
-      </div>
-
-      {latest&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:16}}>
-        <InfoPanel label="Next Lesson Focus" value={latest.nextFocus} accent={C.manhattan} icon="🎯"/>
-        <InfoPanel label="Current Homework"  value={latest.homework}  accent={C.jupiter}   icon="📝"/>
-      </div>}
-
-      {student.notes&&<div style={{background:C.card,border:`1px solid ${C.border}`,
-        borderLeft:`4px solid ${C.bermuda}`,borderRadius:12,padding:"13px 16px",marginBottom:16}}>
-        <SectionHead label="Student Notes" color={C.bermuda} icon="📋"/>
-        <div style={{fontSize:13,color:C.text,lineHeight:1.6,fontFamily:FF}}>{student.notes}</div>
-      </div>}
-
-      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"16px 18px",marginBottom:16}}>
-        <SectionHead label="Copy for Lesson Generation" color={C.jupiter} icon="⚡"/>
-        <div style={{fontSize:12,color:C.textSub,marginBottom:12,lineHeight:1.6,fontFamily:FF}}>
-          <strong style={{color:C.text}}>Quick Brief</strong> — continuing an existing conversation. &nbsp;
-          <strong style={{color:C.text}}>Full Context</strong> — starting a fresh chat. &nbsp;
-          <strong style={{color:C.text}}>Lesson Prompt</strong> — master prompt with all structure instructions.
-        </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+        {/* Copy buttons row */}
+        <div style={{display:"flex",gap:8,flexWrap:"wrap",paddingTop:12,borderTop:`1px solid ${C.border}`}}>
           <CopyBtn text={buildQuick(student)}  label="⚡ Quick Brief"  variant="copy"    small/>
           <CopyBtn text={buildFull(student)}   label="📋 Full Context" variant="primary" small/>
           <Btn small variant="ghost" onClick={()=>setPromptModal(true)}>📄 Lesson Prompt</Btn>
         </div>
       </div>
 
-      <SkillTags
-        skills={student.skills||{achieved:[],desired:[]}}
-        onUpdate={onUpdateSkills}/>
-
-      <div style={{display:"grid",gridTemplateColumns:"1fr 300px",gap:18,alignItems:"start"}}>
+      {/* Main two-column layout */}
+      <div style={{display:"grid",gridTemplateColumns:"minmax(0,1fr) 340px",gap:18,alignItems:"start"}}>
+        {/* Left column: focus/homework + notes + lesson history */}
         <div>
+          {latest&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:16}}>
+            <InfoPanel label="Next Lesson Focus" value={latest.nextFocus} accent={C.manhattan} icon="🎯"/>
+            <InfoPanel label="Current Homework"  value={latest.homework}  accent={C.jupiter}   icon="📝"/>
+          </div>}
+
+          {student.notes&&<div style={{background:C.card,border:`1px solid ${C.border}`,
+            borderLeft:`4px solid ${C.bermuda}`,borderRadius:12,padding:"13px 16px",marginBottom:16}}>
+            <SectionHead label="Student Notes" color={C.bermuda} icon="📋"/>
+            <div style={{fontSize:13,color:C.text,lineHeight:1.6,fontFamily:FF}}>{student.notes}</div>
+          </div>}
+
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
             <div style={{fontWeight:800,fontSize:14,color:C.text,fontFamily:FF}}>Lesson History</div>
             <Btn small onClick={()=>setModal({type:"addLesson"})}>+ Log Lesson</Btn>
@@ -541,7 +540,12 @@ const StudentDetail = ({student,onBack,onEdit,onDelete,onAddLesson,onEditLesson,
             </div>
           ))}
         </div>
+
+        {/* Right column: skill tags + song list */}
         <div style={{position:"sticky",top:116}}>
+          <SkillTags
+            skills={student.skills||{achieved:[],desired:[]}}
+            onUpdate={onUpdateSkills}/>
           <SongList
             songs={student.songs||[]}
             onAdd={onAddSong}
@@ -773,7 +777,7 @@ const AppHeader = ()=>(
 
 // ── Auth Gate ─────────────────────────────────────────────────────
 const AUTH_KEY  = "gst_auth_v1";
-const AUTH_PASS = "guitar"; // ← change this to your preferred password
+const AUTH_PASS = "foothillfrets"; // ← change this to your preferred password
 
 const AuthGate = ({children})=>{
   const [authed,setAuthed]=useState(()=>localStorage.getItem(AUTH_KEY)==="1");
