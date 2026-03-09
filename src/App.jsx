@@ -1,15 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
 import React from "react";
 
-const fontLink = document.createElement("link");
-fontLink.rel = "stylesheet";
-fontLink.href = "https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap";
-document.head.appendChild(fontLink);
+const globalStyle = document.createElement("style");
+globalStyle.textContent = `*, *::before, *::after { box-sizing: border-box; } html, body { margin: 0; padding: 0; background: #12161f; }`;
+document.head.appendChild(globalStyle);
 
 const C = {
   manhattan:"#E8A98A", jupiter:"#6B8F8A",
   bermuda:"#7A9BB5",   frolly:"#E8736A",
-  bg:"#0f1117",        bgAlt:"#161b25",
+  bg:"#12161f",        bgAlt:"#161b25",
   card:"#1c2333",      cardHover:"#212a3e",
   muted:"#2a3347",     mutedLight:"#334059",
   border:"#2e3d55",
@@ -28,7 +27,12 @@ const FF           = "'Montserrat', sans-serif";
 
 const SEED = [
   { id:"s1", name:"Jamie Chen", instrument:"Acoustic", level:"Beginner",
-    startDate:daysAgo(60), notes:"Keen learner, left-handed but using standard guitar. Loves classic rock.", isNew:false,
+    startDate:daysAgo(60), notes:"Keen learner, left-handed but using standard guitar. Loves classic rock.", isNew:false, weekly:true,
+    skills:{ achieved:["Open chords","Basic strumming"], desired:["Barre chords","Fingerpicking"] },
+    songs:[
+      { id:"sg1", title:"Knockin' on Heaven's Door", link:"", done:true },
+      { id:"sg2", title:"Wonderwall", link:"", done:false },
+    ],
     lessons:[
       { id:"l1", date:daysAgo(14), covered:"Open chords G, C and D. Basic down-strum pattern.",
         homework:"Practise G→C→D transitions slowly with a metronome at 60bpm.",
@@ -39,7 +43,11 @@ const SEED = [
     ]
   },
   { id:"s2", name:"Priya Nair", instrument:"Classical", level:"Elementary",
-    startDate:daysAgo(10), notes:"Previous piano background. First guitar student.", isNew:true,
+    startDate:daysAgo(10), notes:"Previous piano background. First guitar student.", isNew:true, weekly:true,
+    skills:{ achieved:["Guitar posture","Tuning by ear"], desired:["Am and E chords","Basic fingerpicking"] },
+    songs:[
+      { id:"sg3", title:"Malaguena (simplified)", link:"", done:false },
+    ],
     lessons:[
       { id:"l3", date:daysAgo(7), covered:"First lesson. Guitar anatomy, tuning, posture.",
         homework:"Practise sitting posture daily.",
@@ -207,7 +215,7 @@ const Sel = ({value,onChange,options})=>(
 
 // ── Forms ─────────────────────────────────────────────────────────
 const StudentForm = ({initial,onSave,onClose})=>{
-  const blank = {name:"",instrument:"Acoustic",level:"Beginner",startDate:TODAY,notes:"",isNew:true};
+  const blank = {name:"",instrument:"Acoustic",level:"Beginner",startDate:TODAY,notes:"",isNew:true,weekly:true};
   const [f,setF]=useState(initial ? {...blank,...initial} : blank);
   const set=k=>e=>setF(p=>({...p,[k]:e.target.value}));
   return <>
@@ -226,12 +234,20 @@ const StudentForm = ({initial,onSave,onClose})=>{
         placeholder="Background, goals, preferences…" style={{...inp,resize:"vertical"}}/>
     </Field>
     <Field label="">
-      <label style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",fontSize:13,fontFamily:FF}}>
-        <input type="checkbox" checked={f.isNew}
-          onChange={e=>setF(p=>({...p,isNew:e.target.checked}))}
-          style={{accentColor:C.frolly,width:15,height:15}}/>
-        <span style={{color:C.text,fontWeight:600}}>Mark as New Student</span>
-      </label>
+      <div style={{display:"flex",flexDirection:"column",gap:10}}>
+        <label style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",fontSize:13,fontFamily:FF}}>
+          <input type="checkbox" checked={f.weekly}
+            onChange={e=>setF(p=>({...p,weekly:e.target.checked}))}
+            style={{accentColor:C.bermuda,width:15,height:15}}/>
+          <span style={{color:C.text,fontWeight:600}}>Weekly student</span>
+        </label>
+        <label style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",fontSize:13,fontFamily:FF}}>
+          <input type="checkbox" checked={f.isNew}
+            onChange={e=>setF(p=>({...p,isNew:e.target.checked}))}
+            style={{accentColor:C.frolly,width:15,height:15}}/>
+          <span style={{color:C.text,fontWeight:600}}>Mark as New Student</span>
+        </label>
+      </div>
     </Field>
     <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:4}}>
       <Btn variant="secondary" onClick={onClose}>Cancel</Btn>
@@ -266,20 +282,37 @@ const LessonForm = ({initial,onSave,onClose})=>{
   </>;
 };
 
+// ── Next Up logic ─────────────────────────────────────────────────
+function getNextUp(students) {
+  const eligible = students.filter(s => s.weekly && mostRecent(s));
+  if (!eligible.length) return null;
+  const withNext = eligible.map(s => {
+    const ml = mostRecent(s);
+    const nextDate = new Date(ml.date);
+    nextDate.setDate(nextDate.getDate() + 7);
+    return { student: s, nextDate, ml };
+  });
+  withNext.sort((a, b) => a.nextDate - b.nextDate);
+  // Prefer today-or-future; fall back to most recently overdue
+  const future = withNext.filter(x => x.nextDate >= new Date(TODAY));
+  return future.length ? future[0] : withNext[withNext.length - 1];
+}
+
 // ── Dashboard ─────────────────────────────────────────────────────
 const Dashboard = ({students,onGoto})=>{
   const all=students.flatMap(s=>s.lessons.map(l=>({...l,studentName:s.name,studentId:s.id})));
-  const overdue=students.filter(s=>{const ml=mostRecent(s);return !ml||daysSince(ml.date)>=14;});
   const newStu=students.filter(s=>s.isNew);
   const recent=all.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+  const nextUp=getNextUp(students);
   return (
     <div style={{padding:"24px 20px",maxWidth:960,margin:"0 auto",fontFamily:FF}}>
       <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:26}}>
-        <StatCard label="Total Students"    value={students.length} accent={C.bermuda}/>
-        <StatCard label="New Students"      value={newStu.length}   accent={C.frolly}/>
-        <StatCard label="Lessons Logged"    value={all.length}      accent={C.jupiter}/>
-        <StatCard label="Overdue Check-ins" value={overdue.length}  accent={C.manhattan}
-          sub={overdue.length?"14+ days since last lesson":undefined}/>
+        <StatCard label="Total Students" value={students.length} accent={C.bermuda}/>
+        <StatCard label="New Students"   value={newStu.length}   accent={C.frolly}/>
+        <StatCard label="Lessons Logged" value={all.length}      accent={C.jupiter}/>
+        <StatCard label="Next Up" accent={C.manhattan}
+          value={nextUp ? nextUp.student.name.split(" ")[0] : "—"}
+          sub={nextUp ? `${nextUp.student.instrument} · ${nextUp.student.level}` : "No weekly students set up yet"}/>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18}}>
         <DashSection title="Recent Lessons" accent={C.bermuda}>
@@ -297,19 +330,35 @@ const Dashboard = ({students,onGoto})=>{
           ))}
         </DashSection>
         <div style={{display:"flex",flexDirection:"column",gap:18}}>
-          <DashSection title="Overdue Check-ins" accent={C.frolly}>
-            {overdue.length===0?<DE>All students up to date 🎉</DE>:overdue.map(s=>{
-              const ml=mostRecent(s);
-              return <div key={s.id} onClick={()=>onGoto(s.id)}
-                style={{padding:"9px 14px",borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer"}}
-                onMouseEnter={e=>e.currentTarget.style.background=C.muted}
-                onMouseLeave={e=>e.currentTarget.style.background=""}>
-                <span style={{fontWeight:700,fontSize:13,color:C.text}}>{s.name}</span>
-                <span style={{fontSize:11,color:C.frolly,fontWeight:700}}>{ml?`${daysSince(ml.date)}d ago`:"No lessons"}</span>
-              </div>;
-            })}
+          <DashSection title="Next Up" accent={C.manhattan}>
+            {!nextUp
+              ? <DE>No weekly students set up yet.</DE>
+              : <div onClick={()=>onGoto(nextUp.student.id)}
+                  style={{padding:"14px 16px",cursor:"pointer"}}
+                  onMouseEnter={e=>e.currentTarget.style.background=C.muted}
+                  onMouseLeave={e=>e.currentTarget.style.background=""}>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                    <span style={{fontWeight:800,fontSize:15,color:C.text,fontFamily:FF}}>{nextUp.student.name}</span>
+                    <Badge label={nextUp.student.instrument} color={C.manhattan} small/>
+                    <Badge label={nextUp.student.level} color={LEVEL_COLORS[nextUp.student.level]} small/>
+                  </div>
+                  {nextUp.ml.covered || nextUp.ml.nextFocus
+                    ? <>
+                        {nextUp.ml.covered && <div style={{marginBottom:6}}>
+                          <span style={{fontSize:10,fontWeight:800,color:C.textSub,textTransform:"uppercase",letterSpacing:"0.05em"}}>Last lesson </span>
+                          <span style={{fontSize:13,color:C.text,lineHeight:1.5}}>{nextUp.ml.covered}</span>
+                        </div>}
+                        {nextUp.ml.nextFocus && <div>
+                          <span style={{fontSize:10,fontWeight:800,color:C.manhattan,textTransform:"uppercase",letterSpacing:"0.05em"}}>Focus for today </span>
+                          <span style={{fontSize:13,color:C.text,lineHeight:1.5}}>{nextUp.ml.nextFocus}</span>
+                        </div>}
+                      </>
+                    : <DE>No lesson logged yet — add one first.</DE>
+                  }
+                </div>
+            }
           </DashSection>
-          <DashSection title="New Students" accent={C.manhattan}>
+          <DashSection title="New Students" accent={C.frolly}>
             {newStu.length===0?<DE>No new students flagged.</DE>:newStu.map(s=>(
               <div key={s.id} onClick={()=>onGoto(s.id)}
                 style={{padding:"9px 14px",borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer"}}
@@ -367,6 +416,7 @@ const StudentGrid = ({students,onSelect,onAdd})=>{
               <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}}>
                 <Badge label={s.instrument} color={C.bermuda} small/>
                 <Badge label={s.level} color={LEVEL_COLORS[s.level]} small/>
+                {s.weekly&&<Badge label="Weekly" color={C.jupiter} small/>}
               </div>
               <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.textSub,marginBottom:8}}>
                 <span>📚 {s.lessons.length} lesson{s.lessons.length!==1?"s":""}</span>
@@ -388,7 +438,7 @@ const StudentGrid = ({students,onSelect,onAdd})=>{
 };
 
 // ── Student Detail ────────────────────────────────────────────────
-const StudentDetail = ({student,onBack,onEdit,onDelete,onAddLesson,onEditLesson,onDeleteLesson})=>{
+const StudentDetail = ({student,onBack,onEdit,onDelete,onAddLesson,onEditLesson,onDeleteLesson,onUpdateSkills,onAddSong,onToggleSong,onDeleteSong})=>{
   const [confirm,setConfirm]=useState(null);
   const [modal,setModal]=useState(null);
   const [promptModal,setPromptModal]=useState(false);
@@ -448,6 +498,16 @@ const StudentDetail = ({student,onBack,onEdit,onDelete,onAddLesson,onEditLesson,
           <Btn small variant="ghost" onClick={()=>setPromptModal(true)}>📄 Lesson Prompt</Btn>
         </div>
       </div>
+
+      <SkillTags
+        skills={student.skills||{achieved:[],desired:[]}}
+        onUpdate={onUpdateSkills}/>
+
+      <SongList
+        songs={student.songs||[]}
+        onAdd={onAddSong}
+        onToggle={onToggleSong}
+        onDelete={onDeleteSong}/>
 
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
         <div style={{fontWeight:800,fontSize:14,color:C.text,fontFamily:FF}}>Lesson History</div>
@@ -534,15 +594,127 @@ const LR = ({icon,label,value,accent})=>(
   </div>
 );
 
+// ── Skill Tags ────────────────────────────────────────────────────
+const TagGroup = ({label,accent,tags,input,setInput,onAdd,onRemove})=>(
+  <div style={{marginBottom:14}}>
+    <div style={{fontSize:10,fontWeight:700,color:accent,textTransform:"uppercase",
+      letterSpacing:"0.06em",marginBottom:8,fontFamily:FF}}>{label}</div>
+    <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:8,minHeight:24}}>
+      {tags.length===0&&<span style={{fontSize:12,color:C.textMuted,fontStyle:"italic",fontFamily:FF}}>None yet</span>}
+      {tags.map(t=>(
+        <span key={t} style={{display:"inline-flex",alignItems:"center",gap:3,
+          padding:"2px 6px 2px 10px",borderRadius:20,fontSize:11,fontWeight:600,
+          background:accent+"22",color:accent,border:`1px solid ${accent}44`,fontFamily:FF}}>
+          {t}
+          <button onClick={()=>onRemove(t)} style={{background:"none",border:"none",cursor:"pointer",
+            color:accent,fontSize:13,padding:"0 2px",lineHeight:1,opacity:0.6,fontFamily:FF}}
+            onMouseEnter={e=>e.currentTarget.style.opacity="1"}
+            onMouseLeave={e=>e.currentTarget.style.opacity="0.6"}>×</button>
+        </span>
+      ))}
+    </div>
+    <div style={{display:"flex",gap:8}}>
+      <input value={input} onChange={e=>setInput(e.target.value)}
+        onKeyDown={e=>{if(e.key==="Enter"){onAdd();e.preventDefault();}}}
+        placeholder={`Add ${label.toLowerCase()} skill…`}
+        style={{...inp,flex:1,padding:"6px 10px",fontSize:12}}/>
+      <Btn small variant="ghost" onClick={onAdd} disabled={!input.trim()}>Add</Btn>
+    </div>
+  </div>
+);
+
+const SkillTags = ({skills,onUpdate})=>{
+  const [achIn,setAchIn]=useState(""); const [desIn,setDesIn]=useState("");
+  const achieved=(skills?.achieved||[]); const desired=(skills?.desired||[]);
+  const addTag=(group,val)=>{
+    const t=val.trim(); if(!t) return;
+    const arr=group==="achieved"?achieved:desired;
+    if(arr.includes(t)) return;
+    onUpdate({achieved,desired,[group]:[...arr,t]});
+  };
+  const removeTag=(group,tag)=>{
+    const arr=group==="achieved"?achieved:desired;
+    onUpdate({achieved,desired,[group]:arr.filter(t=>t!==tag)});
+  };
+  return (
+    <div style={{background:C.card,border:`1px solid ${C.border}`,
+      borderLeft:`4px solid ${C.jupiter}`,borderRadius:12,padding:"14px 18px",marginBottom:16}}>
+      <SectionHead label="Skill Tags" color={C.jupiter} icon="⭐"/>
+      <TagGroup label="Achieved" accent={C.jupiter} tags={achieved}
+        input={achIn} setInput={setAchIn}
+        onAdd={()=>{addTag("achieved",achIn);setAchIn("");}}
+        onRemove={t=>removeTag("achieved",t)}/>
+      <TagGroup label="Desired" accent={C.manhattan} tags={desired}
+        input={desIn} setInput={setDesIn}
+        onAdd={()=>{addTag("desired",desIn);setDesIn("");}}
+        onRemove={t=>removeTag("desired",t)}/>
+    </div>
+  );
+};
+
+// ── Song List ─────────────────────────────────────────────────────
+const SongList = ({songs,onAdd,onToggle,onDelete})=>{
+  const [title,setTitle]=useState(""); const [link,setLink]=useState("");
+  const handleAdd=()=>{
+    if(!title.trim()) return;
+    onAdd({id:uid(),title:title.trim(),link:link.trim(),done:false});
+    setTitle(""); setLink("");
+  };
+  return (
+    <div style={{background:C.card,border:`1px solid ${C.border}`,
+      borderLeft:`4px solid ${C.frolly}`,borderRadius:12,padding:"14px 18px",marginBottom:16}}>
+      <SectionHead label="Song List" color={C.frolly} icon="🎵"/>
+      {songs.length===0&&
+        <div style={{fontSize:12,color:C.textMuted,fontStyle:"italic",marginBottom:12,fontFamily:FF}}>No songs added yet.</div>}
+      {songs.map(song=>(
+        <div key={song.id} style={{display:"flex",alignItems:"center",gap:8,
+          padding:"7px 0",borderBottom:`1px solid ${C.border}`,
+          opacity:song.done?0.45:1,transition:"opacity .15s"}}>
+          <span onClick={()=>onToggle(song.id)} style={{
+            flex:1,fontSize:13,color:C.text,cursor:"pointer",fontFamily:FF,
+            textDecoration:song.done?"line-through":"none",userSelect:"none"}}
+            onMouseEnter={e=>e.currentTarget.style.opacity="0.7"}
+            onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+            {song.title}
+          </span>
+          {song.link&&
+            <a href={song.link} target="_blank" rel="noopener noreferrer"
+              style={{color:C.bermuda,fontSize:14,lineHeight:1,textDecoration:"none",flexShrink:0}}
+              title="Open link">🔗</a>}
+          <button onClick={()=>onDelete(song.id)} style={{background:"none",border:"none",
+            cursor:"pointer",color:C.textMuted,fontSize:16,padding:"0 2px",lineHeight:1,flexShrink:0}}
+            onMouseEnter={e=>e.currentTarget.style.color=C.frolly}
+            onMouseLeave={e=>e.currentTarget.style.color=C.textMuted}>×</button>
+        </div>
+      ))}
+      <div style={{display:"flex",gap:8,marginTop:12,flexWrap:"wrap"}}>
+        <input value={title} onChange={e=>setTitle(e.target.value)}
+          onKeyDown={e=>{if(e.key==="Enter")handleAdd();}}
+          placeholder="Song title…"
+          style={{...inp,flex:"2 1 140px",padding:"6px 10px",fontSize:12}}/>
+        <input value={link} onChange={e=>setLink(e.target.value)}
+          onKeyDown={e=>{if(e.key==="Enter")handleAdd();}}
+          placeholder="Link (optional, e.g. YouTube)…"
+          style={{...inp,flex:"3 1 200px",padding:"6px 10px",fontSize:12}}/>
+        <Btn small onClick={handleAdd} disabled={!title.trim()}>Add Song</Btn>
+      </div>
+    </div>
+  );
+};
+
 // ── Students Tab ──────────────────────────────────────────────────
-const StudentsTab = ({students,selectedId,onSelect,addStudent,editStudent,deleteStudent,addLesson,editLesson,deleteLesson})=>{
+const StudentsTab = ({students,selectedId,onSelect,addStudent,editStudent,deleteStudent,addLesson,editLesson,deleteLesson,updateSkills,addSong,toggleSong,deleteSong})=>{
   const [addModal,setAddModal]=useState(false);
   const selected=students.find(s=>s.id===selectedId);
   if(selected) return <StudentDetail student={selected} onBack={()=>onSelect(null)}
     onEdit={d=>editStudent(selected.id,d)} onDelete={()=>deleteStudent(selected.id)}
     onAddLesson={d=>addLesson(selected.id,d)}
     onEditLesson={(lid,d)=>editLesson(selected.id,lid,d)}
-    onDeleteLesson={lid=>deleteLesson(selected.id,lid)}/>;
+    onDeleteLesson={lid=>deleteLesson(selected.id,lid)}
+    onUpdateSkills={sk=>updateSkills(selected.id,sk)}
+    onAddSong={song=>addSong(selected.id,song)}
+    onToggleSong={songId=>toggleSong(selected.id,songId)}
+    onDeleteSong={songId=>deleteSong(selected.id,songId)}/>;
   return <>
     <StudentGrid students={students} onSelect={onSelect} onAdd={()=>setAddModal(true)}/>
     {addModal&&<Modal title="Add Student" onClose={()=>setAddModal(false)}>
@@ -610,12 +782,16 @@ export default function App(){
     return ()=>clearTimeout(t);
   },[students,ready]);
 
-  const addStudent    =useCallback(d=>setStudents(p=>[...p,{...d,id:uid(),lessons:[]}]),[]);
+  const addStudent    =useCallback(d=>setStudents(p=>[...p,{...d,id:uid(),lessons:[],skills:{achieved:[],desired:[]},songs:[]}]),[]);
   const editStudent   =useCallback((id,d)=>setStudents(p=>p.map(s=>s.id===id?{...s,...d}:s)),[]);
   const deleteStudent =useCallback(id=>{setStudents(p=>p.filter(s=>s.id!==id));setSelId(null);setTab("students");},[]);
   const addLesson     =useCallback((sid,d)=>setStudents(p=>p.map(s=>s.id===sid?{...s,lessons:[...s.lessons,{...d,id:uid()}]}:s)),[]);
   const editLesson    =useCallback((sid,lid,d)=>setStudents(p=>p.map(s=>s.id===sid?{...s,lessons:s.lessons.map(l=>l.id===lid?{...l,...d}:l)}:s)),[]);
   const deleteLesson  =useCallback((sid,lid)=>setStudents(p=>p.map(s=>s.id===sid?{...s,lessons:s.lessons.filter(l=>l.id!==lid)}:s)),[]);
+  const updateSkills  =useCallback((sid,sk)=>setStudents(p=>p.map(s=>s.id===sid?{...s,skills:sk}:s)),[]);
+  const addSong       =useCallback((sid,song)=>setStudents(p=>p.map(s=>s.id===sid?{...s,songs:[...(s.songs||[]),song]}:s)),[]);
+  const toggleSong    =useCallback((sid,songId)=>setStudents(p=>p.map(s=>s.id===sid?{...s,songs:(s.songs||[]).map(sg=>sg.id===songId?{...sg,done:!sg.done}:sg)}:s)),[]);
+  const deleteSong    =useCallback((sid,songId)=>setStudents(p=>p.map(s=>s.id===sid?{...s,songs:(s.songs||[]).filter(sg=>sg.id!==songId)}:s)),[]);
 
   if(!ready) return (
     <div style={{display:"flex",alignItems:"center",justifyContent:"center",
@@ -657,7 +833,8 @@ export default function App(){
       {tab==="dashboard"&&<Dashboard students={students} onGoto={id=>{setSelId(id);setTab("students");}}/>}
       {tab==="students"&&<StudentsTab students={students} selectedId={selId} onSelect={setSelId}
         addStudent={addStudent} editStudent={editStudent} deleteStudent={deleteStudent}
-        addLesson={addLesson} editLesson={editLesson} deleteLesson={deleteLesson}/>}
+        addLesson={addLesson} editLesson={editLesson} deleteLesson={deleteLesson}
+        updateSkills={updateSkills} addSong={addSong} toggleSong={toggleSong} deleteSong={deleteSong}/>}
     </div>
   );
 }
