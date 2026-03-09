@@ -2,20 +2,20 @@ import { useState, useEffect, useCallback } from "react";
 import React from "react";
 
 const globalStyle = document.createElement("style");
-globalStyle.textContent = `*, *::before, *::after { box-sizing: border-box; } html, body { margin: 0; padding: 0; background: #1b1712; }`;
+globalStyle.textContent = `*, *::before, *::after { box-sizing: border-box; } html, body { margin: 0; padding: 0; background: #0f1a20; }`;
 document.head.appendChild(globalStyle);
 
 const C = {
   manhattan:"#E8A98A", jupiter:"#6B8F8A",
   bermuda:"#7A9BB5",   frolly:"#E8736A",
-  bg:"#1b1712",        bgAlt:"#221e18",
-  card:"#2b261f",      cardHover:"#322c24",
-  muted:"#3c3529",     mutedLight:"#4a4234",
-  border:"#4a422e",
-  text:"#e8e0d5",      textSub:"#8a7d68",
-  textMuted:"#6a5e4e",
-  nav:"#131009",
-  oxford:"#231f17",
+  bg:"#0f1a20",        bgAlt:"#141f26",
+  card:"#192530",      cardHover:"#1f2e3a",
+  muted:"#243540",     mutedLight:"#2d4252",
+  border:"#2d4252",
+  text:"#d8e8f0",      textSub:"#6a8a9a",
+  textMuted:"#4a6878",
+  nav:"#0b141a",
+  oxford:"#111e26",
 };
 
 const LEVEL_COLORS = { Beginner:C.bermuda, Elementary:C.jupiter, Intermediate:C.manhattan, Advanced:C.frolly };
@@ -743,31 +743,21 @@ const StudentsTab = ({students,selectedId,onSelect,addStudent,editStudent,delete
 const AppHeader = ()=>(
   <div style={{
     width:"100%", height:72,
-    background:`linear-gradient(135deg, #0b0e16 0%, #111827 50%, #0b0e16 100%)`,
+    background:C.bg,
     display:"flex", alignItems:"center", justifyContent:"center",
     position:"relative", overflow:"hidden",
-    borderBottom:`1px solid ${C.border}`,
   }}>
-    <div style={{position:"absolute",inset:0,overflow:"hidden",opacity:0.12}}>
-      {[C.manhattan,C.jupiter,C.bermuda,C.frolly].map((col,i)=>(
-        <div key={i} style={{
-          position:"absolute", top:"-20%", bottom:"-20%",
-          left:`${18+i*22}%`, width:1,
-          background:col, transform:"skewX(-25deg)",
-        }}/>
-      ))}
-    </div>
     <div style={{position:"absolute",bottom:0,left:"5%",right:"5%",height:"2px",
       background:`linear-gradient(90deg,transparent,${C.manhattan}66,${C.jupiter}66,${C.bermuda}66,transparent)`}}/>
     <div style={{position:"relative",zIndex:2,display:"flex",alignItems:"center",gap:12}}>
       <span style={{fontSize:26}}>🎸</span>
       <div>
-        <div style={{fontSize:18,fontWeight:900,color:C.text,fontFamily:FF,
+        <div style={{fontSize:22,fontWeight:400,color:C.text,fontFamily:FF,
           letterSpacing:"0.08em",textTransform:"uppercase",lineHeight:1}}>
           Guitar Student Tracker
         </div>
         <div style={{fontSize:9,fontWeight:600,color:C.textMuted,fontFamily:FF,
-          letterSpacing:"0.18em",textTransform:"uppercase",marginTop:3}}>
+          letterSpacing:"0.18em",textTransform:"uppercase",marginTop:4}}>
           Lesson Planner &amp; Progress Log
         </div>
       </div>
