@@ -1,5 +1,22 @@
 const path = require("path");
+const fs   = require("fs");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+
+// Copies static files from public/ into dist/ without an extra npm package
+class CopyPublicPlugin {
+  apply(compiler) {
+    compiler.hooks.emit.tapAsync("CopyPublicPlugin", (compilation, cb) => {
+      ["manifest.json", "sw.js", "favicon.svg"].forEach(file => {
+        const src = path.resolve(__dirname, "public", file);
+        if (fs.existsSync(src)) {
+          const content = fs.readFileSync(src, "utf8");
+          compilation.assets[file] = { source: () => content, size: () => Buffer.byteLength(content) };
+        }
+      });
+      cb();
+    });
+  }
+}
 
 module.exports = {
   entry: "./src/index.js",
@@ -21,7 +38,8 @@ module.exports = {
     }],
   },
   plugins: [
-    new HtmlWebpackPlugin({ template: "./public/index.html" }),
+    new HtmlWebpackPlugin({ template: "./public/index.html", favicon: "./public/favicon.svg" }),
+    new CopyPublicPlugin(),
   ],
   devServer: {
     historyApiFallback: true,

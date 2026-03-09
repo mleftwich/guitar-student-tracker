@@ -2,20 +2,20 @@ import { useState, useEffect, useCallback } from "react";
 import React from "react";
 
 const globalStyle = document.createElement("style");
-globalStyle.textContent = `*, *::before, *::after { box-sizing: border-box; } html, body { margin: 0; padding: 0; background: #12161f; }`;
+globalStyle.textContent = `*, *::before, *::after { box-sizing: border-box; } html, body { margin: 0; padding: 0; background: #1a2238; }`;
 document.head.appendChild(globalStyle);
 
 const C = {
   manhattan:"#E8A98A", jupiter:"#6B8F8A",
   bermuda:"#7A9BB5",   frolly:"#E8736A",
-  bg:"#12161f",        bgAlt:"#161b25",
-  card:"#1c2333",      cardHover:"#212a3e",
-  muted:"#2a3347",     mutedLight:"#334059",
-  border:"#2e3d55",
+  bg:"#1a2238",        bgAlt:"#202840",
+  card:"#273050",      cardHover:"#2d3860",
+  muted:"#323f60",     mutedLight:"#3d4e72",
+  border:"#3a4d6e",
   text:"#e2e8f0",      textSub:"#7a8fa8",
-  textMuted:"#4a5e78",
-  nav:"#0b0e16",
-  oxford:"#1e2a3a",
+  textMuted:"#5a6e8a",
+  nav:"#141a2e",
+  oxford:"#243050",
 };
 
 const LEVEL_COLORS = { Beginner:C.bermuda, Elementary:C.jupiter, Intermediate:C.manhattan, Advanced:C.frolly };
@@ -424,6 +424,13 @@ const StudentGrid = ({students,onSelect,onAdd})=>{
                   ?<span style={{color:days>=14?C.frolly:C.textSub,fontWeight:days>=14?700:400}}>🕐 {days}d ago</span>
                   :<span>No lessons yet</span>}
               </div>
+              {s.skills?.achieved?.length>0&&<div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:8}}>
+                {s.skills.achieved.slice(0,3).map(t=>(
+                  <span key={t} style={{fontSize:9,fontWeight:700,padding:"1px 7px",borderRadius:20,
+                    background:C.jupiter+"22",color:C.jupiter,border:`1px solid ${C.jupiter}33`,fontFamily:FF}}>{t}</span>
+                ))}
+                {s.skills.achieved.length>3&&<span style={{fontSize:9,color:C.textMuted,fontFamily:FF,padding:"1px 4px"}}>+{s.skills.achieved.length-3}</span>}
+              </div>}
               {ml?.nextFocus&&<div style={{fontSize:11,color:C.text,background:C.muted,borderRadius:7,
                 padding:"6px 9px",lineHeight:1.4,borderLeft:`3px solid ${C.manhattan}`}}>
                 <strong style={{color:C.manhattan}}>Next: </strong>
@@ -446,7 +453,7 @@ const StudentDetail = ({student,onBack,onEdit,onDelete,onAddLesson,onEditLesson,
   const latest=sorted[0]; const days=latest?daysSince(latest.date):null;
 
   return (
-    <div style={{padding:"20px",maxWidth:840,margin:"0 auto",fontFamily:FF}}>
+    <div style={{padding:"20px",maxWidth:1060,margin:"0 auto",fontFamily:FF}}>
       <button onClick={onBack} style={{background:"none",border:"none",cursor:"pointer",
         color:C.textSub,fontSize:13,fontWeight:600,marginBottom:16,
         display:"flex",alignItems:"center",gap:5,padding:0,fontFamily:FF}}>← Back to Students</button>
@@ -503,40 +510,45 @@ const StudentDetail = ({student,onBack,onEdit,onDelete,onAddLesson,onEditLesson,
         skills={student.skills||{achieved:[],desired:[]}}
         onUpdate={onUpdateSkills}/>
 
-      <SongList
-        songs={student.songs||[]}
-        onAdd={onAddSong}
-        onToggle={onToggleSong}
-        onDelete={onDeleteSong}/>
-
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-        <div style={{fontWeight:800,fontSize:14,color:C.text,fontFamily:FF}}>Lesson History</div>
-        <Btn small onClick={()=>setModal({type:"addLesson"})}>+ Log Lesson</Btn>
-      </div>
-      {sorted.length===0
-        ?<div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:24,
-          textAlign:"center",color:C.textSub,fontSize:13,fontStyle:"italic",fontFamily:FF}}>
-          No lessons logged yet. Add the first one!
-        </div>
-        :sorted.map((l,i)=>(
-        <div key={l.id} style={{background:C.card,border:`1px solid ${C.border}`,
-          borderLeft:`4px solid ${i===0?C.bermuda:C.mutedLight}`,
-          borderRadius:12,padding:"16px 18px",marginBottom:12}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-            <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <span style={{fontWeight:700,fontSize:13,color:C.text,fontFamily:FF}}>{fmt(l.date)}</span>
-              {i===0&&<Pill label="Latest" color={C.bermuda}/>}
-            </div>
-            <div style={{display:"flex",gap:6}}>
-              <Btn small variant="ghost" onClick={()=>setModal({type:"editLesson",data:{...l}})}>Edit</Btn>
-              <Btn small variant="danger" onClick={()=>setConfirm({type:"lesson",lessonId:l.id})}>Delete</Btn>
-            </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 300px",gap:18,alignItems:"start"}}>
+        <div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+            <div style={{fontWeight:800,fontSize:14,color:C.text,fontFamily:FF}}>Lesson History</div>
+            <Btn small onClick={()=>setModal({type:"addLesson"})}>+ Log Lesson</Btn>
           </div>
-          <LR icon="🎸" label="Covered"    value={l.covered}   accent={C.bermuda}/>
-          {l.homework  &&<LR icon="📝" label="Homework"   value={l.homework}   accent={C.jupiter}/>}
-          {l.nextFocus &&<LR icon="🎯" label="Next Focus" value={l.nextFocus}  accent={C.manhattan}/>}
+          {sorted.length===0
+            ?<div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:24,
+              textAlign:"center",color:C.textSub,fontSize:13,fontStyle:"italic",fontFamily:FF}}>
+              No lessons logged yet. Add the first one!
+            </div>
+            :sorted.map((l,i)=>(
+            <div key={l.id} style={{background:C.card,border:`1px solid ${C.border}`,
+              borderLeft:`4px solid ${i===0?C.bermuda:C.mutedLight}`,
+              borderRadius:12,padding:"16px 18px",marginBottom:12}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <span style={{fontWeight:700,fontSize:13,color:C.text,fontFamily:FF}}>{fmt(l.date)}</span>
+                  {i===0&&<Pill label="Latest" color={C.bermuda}/>}
+                </div>
+                <div style={{display:"flex",gap:6}}>
+                  <Btn small variant="ghost" onClick={()=>setModal({type:"editLesson",data:{...l}})}>Edit</Btn>
+                  <Btn small variant="danger" onClick={()=>setConfirm({type:"lesson",lessonId:l.id})}>Delete</Btn>
+                </div>
+              </div>
+              <LR icon="🎸" label="Covered"    value={l.covered}   accent={C.bermuda}/>
+              {l.homework  &&<LR icon="📝" label="Homework"   value={l.homework}   accent={C.jupiter}/>}
+              {l.nextFocus &&<LR icon="🎯" label="Next Focus" value={l.nextFocus}  accent={C.manhattan}/>}
+            </div>
+          ))}
         </div>
-      ))}
+        <div style={{position:"sticky",top:116}}>
+          <SongList
+            songs={student.songs||[]}
+            onAdd={onAddSong}
+            onToggle={onToggleSong}
+            onDelete={onDeleteSong}/>
+        </div>
+      </div>
 
       {modal?.type==="edit"&&
         <Modal title="Edit Student" onClose={()=>setModal(null)}>
@@ -759,6 +771,48 @@ const AppHeader = ()=>(
   </div>
 );
 
+// ── Auth Gate ─────────────────────────────────────────────────────
+const AUTH_KEY  = "gst_auth_v1";
+const AUTH_PASS = "guitar"; // ← change this to your preferred password
+
+const AuthGate = ({children})=>{
+  const [authed,setAuthed]=useState(()=>localStorage.getItem(AUTH_KEY)==="1");
+  const [pw,setPw]=useState("");
+  const [err,setErr]=useState(false);
+
+  if(authed) return children;
+
+  const attempt=()=>{
+    if(pw===AUTH_PASS){ localStorage.setItem(AUTH_KEY,"1"); setAuthed(true); }
+    else { setErr(true); setPw(""); setTimeout(()=>setErr(false),2000); }
+  };
+
+  return (
+    <div style={{display:"flex",alignItems:"center",justifyContent:"center",
+      minHeight:"100vh",background:C.bg,fontFamily:FF,padding:20}}>
+      <div style={{background:C.card,borderRadius:16,padding:"36px 32px",
+        width:"100%",maxWidth:360,border:`1px solid ${C.border}`,
+        boxShadow:"0 16px 48px #00000044",textAlign:"center"}}>
+        <div style={{fontSize:36,marginBottom:12}}>🎸</div>
+        <div style={{fontSize:18,fontWeight:900,color:C.text,letterSpacing:"0.06em",
+          textTransform:"uppercase",marginBottom:6,fontFamily:FF}}>Guitar Student Tracker</div>
+        <div style={{fontSize:12,color:C.textSub,marginBottom:28,fontFamily:FF}}>Enter your password to continue</div>
+        <input
+          type="password" value={pw}
+          onChange={e=>setPw(e.target.value)}
+          onKeyDown={e=>e.key==="Enter"&&attempt()}
+          placeholder="Password"
+          autoFocus
+          style={{...inp,textAlign:"center",fontSize:15,padding:"10px 14px",
+            borderColor:err?C.frolly:C.border,marginBottom:12,
+            transition:"border-color .2s"}}/>
+        {err&&<div style={{fontSize:12,color:C.frolly,marginBottom:10,fontFamily:FF}}>Incorrect password</div>}
+        <Btn full onClick={attempt}>Enter</Btn>
+      </div>
+    </div>
+  );
+};
+
 // ── App Root ──────────────────────────────────────────────────────
 export default function App(){
   const [tab,setTab]=useState("dashboard");
@@ -807,6 +861,7 @@ export default function App(){
   const TABS=[{id:"dashboard",label:"Dashboard"},{id:"students",label:"Students"}];
 
   return (
+    <AuthGate>
     <div style={{fontFamily:FF,background:C.bg,minHeight:"100vh",color:C.text}}>
       <nav style={{background:C.nav,display:"flex",flexDirection:"column",
         position:"sticky",top:0,zIndex:100,borderBottom:`1px solid ${C.border}`}}>
@@ -836,5 +891,6 @@ export default function App(){
         addLesson={addLesson} editLesson={editLesson} deleteLesson={deleteLesson}
         updateSkills={updateSkills} addSong={addSong} toggleSong={toggleSong} deleteSong={deleteSong}/>}
     </div>
+    </AuthGate>
   );
 }

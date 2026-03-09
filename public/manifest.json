@@ -1,0 +1,18 @@
+{
+  "name": "Guitar Student Tracker",
+  "short_name": "Guitar Tracker",
+  "description": "Lesson planner and progress log for guitar teachers",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#1a2238",
+  "theme_color": "#1a2238",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
